@@ -14,6 +14,16 @@ python scripts/preview_template.py "<template.pptx>" --slides 7,12 --output-dir 
 
 当前预览脚本的溢出提示主要覆盖顶层文本形状，组内文字、表格、继承占位和视觉重叠仍需逐页检查。`--video` 采用每页默认4秒的自动导出设置，用于观察效果，不代表现场点击与讲述节奏；最终按分镜在 PowerPoint 中核查实际播放，不能仅凭导出视频判定时长合格。
 
+## 研究连续场景与时间轴
+
+```powershell
+python -X utf8 scripts/study_motion.py "<template.pptx>" --slides 1-4 --output <work>/motion-study.json
+```
+
+用于高级动态请求；具体设计方法见 [advanced-motion.md](advanced-motion.md)。按演示稿的真实页序和关系读取形状、组、几何状态、原始路径/缩放/旋转参数及触发时间，记录源指纹、媒体线索和 Morph 邻页依赖。选择需要的完整连续范围，不将单页截图当作场景。
+
+报告区分有效现代兼容分支与原始 XML 统计；`mc:AlternateContent` 的 Choice/Fallback 不能相加成实际播放数量。未识别扩展和分支支持会在报告中提示。动画节点数为零也可能是跨页 Morph；反之，节点多不说明动画精美。工具仅研究结构，不迁移动画、不证明实际播放，仍须对照源文件的渲染与视频。
+
 ## 拆解可编辑组件
 
 ```powershell
@@ -64,6 +74,14 @@ python scripts/animate_deck.py <source.pptx> <animation-plan.json> <output.pptx>
 {"shape":"Figure","effect":"fly","trigger":"after","duration":0.7,"delay":0.15,"direction":"up","accelerate":0.15,"decelerate":0.2}
 ```
 
-效果支持 fade/wipe/zoom/fly；触发支持 click/after/with；方向 left/right/up/down 用于 fly/wipe。加减速为持续时间比例，和不超过 1。Morph 需要前一页同名同类的 `!!shape_name`。脚本验证唯一形状名、配对和存盘后参数，拒绝重复添加已有动画。
+效果支持 fade/wipe/zoom/fly/transform；触发支持 click/after/with；方向 left/right/up/down 用于 fly/wipe。时长为 0.1–30 秒，delay 为 0–10 秒；加减速为持续时间比例，和不超过 1。每页可用 `transition_duration` 设置转场时长。Morph 需要前一页同名同类的 `!!shape_name`。脚本验证唯一形状名、配对和存盘后参数，拒绝重复添加已有动画。
 
-四种效果是辅助脚本的范围，不是 Skill 的设计范围。迁移复杂运动路径、缩放旋转组合、文字分段或交互触发时，研究源时间轴，通过合适的原生接口制作并重新绑定对象，在代表页验证后使用。保留可编辑资产；不能用视频掩盖原生动画未实现。
+`transform` 在同一个原生效果中组合路径、缩放和旋转，至少提供一个参数：
+
+```json
+{"shape":"Figure","effect":"transform","trigger":"after","duration":1.4,"delay":0.15,"path":"M0 0 C.06 -.1 .15 -.1 .22 0 E","scale":[120,85],"rotate":45,"accelerate":0.1,"decelerate":0.2}
+```
+
+`path` 是归一化幻灯片坐标的 VML 路径，支持大写 M/L/C/Z/E；`scale` 是从原始 100% 到目标百分比的 `[x,y]`；`rotate` 是原生 By 顺时针角度。它们共用效果的触发与时长。`transform` 默认 `start_visible: true`，延迟期间对象已可见，适合遮罩或现有对象移动；显式 `false` 才在动作开始时出现。遮罩若在延迟期间隐藏，会使内容提前闪出，必须播放检查初态。数值范围、严格路径语法和保存后的具体行为都会验证。重新排版后应调整轨迹并检查最终状态，不能机械照搬源坐标。
+
+辅助脚本的范围不是 Skill 的设计上限。迁移遮罩、文字分段、复杂触发或其他原生机制时，研究源时间轴，通过合适的原生接口制作并重新绑定对象，在代表页验证后使用。保留可编辑资产；不能用视频掩盖原生动画未实现。无 Office 时能生成原创样例的静态基稿和计划，不能将其声称为已完成高级动画。

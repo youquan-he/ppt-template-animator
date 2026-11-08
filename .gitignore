@@ -21,3 +21,5 @@ Thumbs.db
 *.mp4
 ~$*
 template_catalog.json
+preferences.local.json
+references/local-motion-library.json

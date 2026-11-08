@@ -6,6 +6,8 @@ A self-contained presentation skill and toolkit. Generate the demo without priva
 
 本项目包含素材覆盖、需求判断、模板学习与拆解、原创重组、中文排版和动态验收流程。它提供确定性的辅助工具；设计质量仍需要阅读素材、逐页看图和实际播放，不能由动画数量或测试总数保证。
 
+高级动画走源序列研究、原生迁移/重建和播放验收流程，支持对象路径、缩放、旋转复合编排与连续 Morph。视觉方向依据主题和用户偏好选择，避免把静态稿加统一淡入当成高级动态。详细方法见 [高级动画制作](references/advanced-motion.md)。
+
 ## 运行条件
 
 建议 Python 3.13；支持配置为 Python 3.10–3.13。首次安装依赖需要网络，示例生成和本地处理无需网络或 API key。
@@ -88,6 +90,18 @@ python -X utf8 scripts/decompose_template.py extract work/demo/animated.pptx --s
 
 基础示例与原生示例都是本地流程；原生路径需要安装并可用的 PowerPoint，本仓库不提供 Office。
 
+## 原创复合动画与连续场景示例
+
+这份四页原创样例演示组合图形的路径/缩放/旋转、连续气泡总览到聚焦、错峰遮罩揭示。全部为可编辑的原生图形和文字，不依赖私有模板或图片；它是机制与流程验证，不是所有主题的默认设计。
+
+```powershell
+python -X utf8 examples/make_advanced_demo.py --output-dir work/advanced-demo
+python -X utf8 scripts/animate_deck.py work/advanced-demo/base.pptx work/advanced-demo/animation-plan.json work/advanced-demo/animated.pptx
+python -X utf8 scripts/preview_template.py work/advanced-demo/animated.pptx --slides 1,2,3,4 --output-dir work/advanced-demo/preview --video
+```
+
+第一步可在没有 Office 的环境运行，生成静态 `base.pptx`、可执行 `animation-plan.json` 及初始为 `planned` 的 `scene-record.json`。后两步需要 Windows 桌面 PowerPoint；不能把第一步的遮罩初态或静态文件当作已完成动画。生成器要求新输出目录。实际播放后在工作记录中更新检查范围，不能自动将计划状态写成已验收。
+
 ## 使用自己的模板
 
 模板库无需上传到仓库，也不要求使用作者的模板。三种目录来源按以下顺序生效：
@@ -115,10 +129,13 @@ python -X utf8 scripts/template_catalog.py inspect templates/example.pptx --slid
 
 也可直接让代理读取仓库的 `SKILL.md`，说明素材目录、观众、用途、时间/页数和模板要求。无需代理即可单独运行上面的命令行工具。
 
+需要记住本机模板库和个人视觉偏好时，将 `preferences.example.json` 复制为 `preferences.local.json` 后填写目录与偏好。它只供代理读取，不会自动变成命令行参数；脚本仍使用显式目录或环境变量。该本机文件及 `references/local-motion-library.json` 不进入公开包。公共版本没有对某个盘符、个人模板库或特定配色的依赖。
+
 - [制作流程](SKILL.md)
 - [素材台账](references/material-ledger.md)
 - [设计、中文排版与复核](references/design-and-review.md)
 - [脚本参数、能力与限制](references/production-tools.md)
+- [高级动态：连续场景、复合运动与验收](references/advanced-motion.md)
 
 ## 测试与复现范围
 
