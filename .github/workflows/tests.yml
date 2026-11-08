@@ -1,0 +1,36 @@
+name: Portable tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.13']
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PPT_NATIVE_TESTS: '0'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install pinned portable dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Check portable environment
+        run: python -X utf8 scripts/doctor.py --skip-native
+      - name: Run tests
+        run: python -X utf8 -m unittest discover -s tests -v
+      - name: Generate a self-contained example
+        run: python -X utf8 examples/make_demo.py --output-dir work/ci-demo
+      - name: Build without Office
+        run: python -X utf8 scripts/build_deck.py work/ci-demo/build-plan.json --native-validation off
+      - name: Inspect template library
+        run: python -X utf8 scripts/template_catalog.py scan --roots work/ci-demo/templates --output work/ci-demo/catalog.json
